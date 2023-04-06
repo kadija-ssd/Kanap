@@ -24,5 +24,4 @@ async function ajoutCanapes() {
             console.log('Erreur de connexion avec le serveur : ', error);
             window.alert('Connexion au serveur impossible !');
         });
-}
-
+} 
