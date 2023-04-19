@@ -1,21 +1,17 @@
-// PAGE D'ACCUEIL
-
-// Récuperation des produits depuis l'API
-
-// Déclaration d'une fonction pour ajouter les canapés à la page d'accueil
-ajoutCanapes();
-async function ajoutCanapes() {
+addArticles();
+//
+async function addArticles() {
     await fetch('http://localhost:3000/api/products')
-        .then(response => response.json())
+        .then((res) => res.json())
         .then((data) => {
-            for (let i = 0; i < data.length; i++) {
-                product = data[i];
-                document.querySelector('.items').innerHTML += 
-                    `<a href="./product.html?id=${product._id}">
+            for (let cpt = 0; cpt < data.length; cpt++) {
+                element = data[cpt];
+                document.querySelector('#items').innerHTML += `
+                    <a href="./product.html?id=${element._id}">
                         <article>
-                            <img src="${product.imageUrl}" alt="${product.altTxt}">
-                            <h3 class="productName">${product.name}</h3>
-                            <p class="productDescription">${product.description}</p>
+                            <img src="${element.imageUrl}" alt="${element.altTxt}">
+                            <h3 class="productName">${element.name}</h3>
+                            <p class="productDescription">${element.description}</p>
                         </article>
                     </a>`;
             }
@@ -24,4 +20,4 @@ async function ajoutCanapes() {
             console.log('Erreur de connexion avec le serveur : ', error);
             window.alert('Connexion au serveur impossible !');
         });
-} 
+}
