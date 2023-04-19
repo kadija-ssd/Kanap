@@ -1,116 +1,116 @@
-let url = new URL(location.href); //déclare une variable valant l'url de la page actuelle
-let kanapPageId = url.searchParams.get("id"); //récupère l'id contenu dans l'url de la page actuelle
+// DECLARATION DE VARIABLES UTILES TOUT AU LONG DU CODE 
+// Variables pour les url
+let pageUrl = new URL(location.href); //cette variable équivaut à l'url de la page actuelle
+let PageActuelleId = pageUrl.searchParams.get("id"); //cette variable récupère l'id contenu dans l'url de la page actuelle
 
-const zoneImgKanap = document.querySelector(".item__img");
-const nomKanap = document.querySelector("#title");
-const prixKanap = document.querySelector("#price");			// emplacements des différentes zones
-const speechKanap = document.querySelector("#description");	// d'insertion des variables dynamiques
-const colorOptions = document.querySelector("#colors");
-let getProductQuantity = document.querySelector("#quantity");
+// Variables pour les elements de la page produit
+const photoArticle = document.querySelector(".item__img");
+const nomArticle = document.querySelector("#title");
+const prixArticle = document.querySelector("#price");// création de différentes variables pour qu'elles puissent
+const textArticle = document.querySelector("#description");	// etre inséré dynamiquement dans le code
+const CouleursOptions = document.querySelector("#colors");
+let quantiteArticle = document.querySelector("#quantity");
 
-fetch(`http://localhost:3000/api/products/${kanapPageId}`) //je ne selectionne QUE la partie du JSON qui m'interesse en fonction de l'id du kanap concerné à fetch
+fetch(`http://localhost:3000/api/products/${PageActuelleId}`) // Ici, on selectionne que la partie du json que l'on souhaite utiliser en fonction de l'id du canapé concerné à par la requete fetch
 	.then((res) => res.json())
-	.then((object) => {
-		const imgKanap = object.imageUrl;
-		const nameKanap = object.name;
-		const priceKanap = object.price;
-		const descriptKanap = object.description;
-		const colorsKanap = object.colors;
+	.then((element) => {
+		const imgKanap = element.imageUrl;
+		const nameKanap = element.name;
+		const priceKanap = element.price;
+		const descriptKanap = element.description;
+		const colorsKanap = element.colors;
 
-		for (let couleur of colorsKanap) {
-			colorOptions.innerHTML += `<option value="${couleur}">${couleur}</option>`;
+		for (let couleur of colorsKanap) { // on crée une boucle for pour que le choix des couleurs du canapé se fait dynamiquement en fonction du modèle sélectionné
+			CouleursOptions.innerHTML += `<option value="${couleur}">${couleur}</option>`;
 		}
-		zoneImgKanap.innerHTML += `<img src="${imgKanap}" alt="Photographie d'un canapé">`;
-		nomKanap.innerText += `${nameKanap}`;
-		prixKanap.innerText += `${priceKanap} `;
-		speechKanap.innerText += `${descriptKanap}`;
+		// on ajoute des variables pour que les elements s'afichent en fonction du canapé choisi
+		photoArticle.innerHTML += `<img src="${imgKanap}" alt="Photographie d'un canapé">`;
+		nomArticle.innerText += `${nameKanap}`;
+		prixArticle.innerText += `${priceKanap} `;
+		textArticle.innerText += `${descriptKanap}`;
 
-		// je crée une fonction déclenchée au clic sur le bouton ADDTOCART
+		// on crée une variable qui va représenter le bouton pour l'ajout au panier
+		const bouton = document.getElementById("addToCart");
 
-		const button = document.getElementById("addToCart");
-
-		//---------------------------------------localStorage----------------------------------------------------
-
+        //on crée une fonction déclenchée au clic sur le bouton ADDTOCART
 		// liste des actions déclenchées au clic sur le bouton "ajouter"
-		button.addEventListener("click", () => {
-			let basketValue = {
-				//initialisation de la variable basketValue
-				idSelectedProduct: kanapPageId,
+		bouton.addEventListener("click", () => {
+			let valeurPanier = { //initialisation de la variable valeurPanier
+				idSelectedProduct: PageActuelleId,
 				nameSelectedProduct: nameKanap,
-				colorSelectedProduct: colorOptions.value,
-				quantity: getProductQuantity.value
+				colorSelectedProduct: CouleursOptions.value,
+				quantity: quantiteArticle.value
 			};
 
-			//je crée une fonction de récupération du panier
-			function getBasket() {
-				let basketValue = JSON.parse(localStorage.getItem("kanapLs"));
-				if (basketValue === null) {
-					return [];				//si le LocalStorage est vide, on crée un tableau vide
+			//on crée une fonction de récupération des éléments du panier
+			function panier() {
+				let valeurPanier = JSON.parse(localStorage.getItem("kanapLs"));
+				if (valeurPanier === null) {
+					return [];	//si le LocalStorage est vide, on crée un tableau vide
 				} else {
-					return basketValue
+					return valeurPanier // sinon on affiche le détail des canapés sélectionnés
 				}
 			}
-
-			//je crée une fonction d'ajout au panier avec argument product
+			//on crée une fonction d'ajout au panier avec l'argument product
 			function addBasket(product) {
-				let basketValue = getBasket();
-				let foundProducts = basketValue.find(
+				panier();
+				let valuePanier = panier();
+				console.log(valuePanier);
+				let foundProducts = valuePanier.find(
 					/// on définit foundProducts comme l'article à trouver
 					(item) =>
 						item.idSelectedProduct === product.idSelectedProduct &&
 						item.colorSelectedProduct === product.colorSelectedProduct	
 				); //si les produits du panier et les produits du LS n'ont pas même ID et même couleur
-					// il retournera undefined  
+					// il retournera undefined 
 				if (
 					foundProducts == undefined &&
-					colorOptions.value != "" &&			//si les consitions sont OK
-					getProductQuantity.value > 0 &&
-					getProductQuantity.value < 100
+					CouleursOptions.value != "" &&	//si les conditions sont validées
+					quantiteArticle.value > 0 &&
+					quantiteArticle.value < 100
 				) {
-					product.quantity = getProductQuantity.value; //la quantité saisie est définie 
-					basketValue.push(product);					 //dans le Ls
+					product.quantity = quantiteArticle.value; //la quantité saisie est définie 
+					valuePanier.push(product);					 //dans le Ls
 				} else if (product.quantity >= 100){
-					alert("la quantité maximale est limité à 100 articles");
+					alert("la quantité maximale est limité à 100 articles !");
+					alert("Les produits ne seront pas ajoutés au panier si il dépasse le nombre 100, veuillez dimunuer la quantité!")
 					document.getElementById("addToCart").disabled = true;
 				}
 				else {
-					let newQuantity =
+					let nvlQuantite =
 						parseInt(foundProducts.quantity) +
-						parseInt(getProductQuantity.value); //CUMUL Quantité si présent ID et color
-					foundProducts.quantity = newQuantity;
+						parseInt(quantiteArticle.value); //CUMUL Quantité si présent ID et color
+					foundProducts.quantity = nvlQuantite;
 				}
-				saveBasket(basketValue);
+				sauvegardePanier(valuePanier);
 				alert(
-					`Le canapé ${nameKanap} ${colorOptions.value} a été ajouté en ${getProductQuantity.value} exemplaires à votre panier !`
+					`Le canapé ${nameKanap} ${CouleursOptions.value} a été ajouté en ${quantiteArticle.value} exemplaires à votre panier !`
 				);
 			}
-			//je crée une fonction de sauvegarde du panier
-			function saveBasket(basketValue) {
-				localStorage.setItem("kanapLs", JSON.stringify(basketValue));
+			//on crée une fonction de sauvegarde du panier
+			function sauvegardePanier(valeurPanier) {
+				localStorage.setItem("kanapLs", JSON.stringify(valeurPanier));
 			}
 
 			// Si le choix de couleur est vide
-			if (colorOptions.value === "") {
-				alert("Veuillez choisir une couleur avant de valider");
+			if (CouleursOptions.value === "") {
+				alert("Veuillez choisir une couleur et une quantité avant de valider");
 				document.getElementById("addToCart").disabled = true;
 			}
 			// Si la quantité choisie est nulle OU si elle dépasse 100
-			else if (
-				getProductQuantity.value <= 0 ||
-				getProductQuantity.value > 100
-			) {
+			else if (quantiteArticle.value <= 0 ||quantiteArticle.value > 100) {
 				alert("Veuillez sélectionner une quantité correcte");
 			} else {
-				//Si tout est OK, on envoie le panier au LS
-				addBasket(basketValue);
+				//Si tout est validé, on envoie le panier au LS
+				addBasket(valeurPanier);
 			}
 		});
 	})
     .catch(function (err) {
 		console.log(err);
 	});
-
-    let valeurActuelle = getProductQuantity.value;
+    // ici on crée une variable qui détermine le nombre d'article dans le panier actuellement et qui affiche la valeur du panier en temps réel
+    let valeurActuelle = quantiteArticle.value;
 	if (valeurActuelle > 1 && valeurActuelle < 100) {
 		alert(`vous avez déjà ${valeurActuelle} article(s) dans votre panier, 
 				il est limité à 100 articles ! 
