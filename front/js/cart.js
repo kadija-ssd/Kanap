@@ -1,44 +1,45 @@
-const basketValue = JSON.parse(localStorage.getItem("kanapLs"));
-/////////////// déclaration de la fonction du fetch pour acceder aux infos Hors Scope/////////
+// variable qui recupere la valeur du panier dans le ls 
+const valeurPanier = JSON.parse(localStorage.getItem("kanapLs"));
+
+// déclaration de la fonction du fetch pour acceder aux infos hors Scope sinon la portée sera limitée
 async function fetchApi() {    
-let basketArrayFull = []; // tableau vide qui va contenir les objets créés en suite
-let basketClassFull = JSON.parse(localStorage.getItem("kanapLs"));
-if (basketClassFull !== null) {
-for (let g = 0; g < basketClassFull.length; g++) {
-	await fetch("http://localhost:3000/api/products/" + basketClassFull[g].idSelectedProduct)
+let panierArrayFull = []; // tableau vide qui va contenir les objets créés en suite
+let PanierClassFull = JSON.parse(localStorage.getItem("kanapLs"));
+if (PanierClassFull !== null) {
+for (let i = 0; i < PanierClassFull.length; i++) {
+	await fetch("http://localhost:3000/api/products/" + PanierClassFull[i].idSelectedProduct)
 		.then((res) => res.json())
 		.then((canap) => {
 			const article = {
-				//création d'un objet qui va regrouper les infos nécessaires à la suite
+				//création d'un objet qui va regrouper les informations dont on aura besoin par la suite
 				_id: canap._id,
 				name: canap.name,
 				price: canap.price,
-				color: basketClassFull[g].colorSelectedProduct,
-				quantity: basketClassFull[g].quantity,
+				color: PanierClassFull[i].colorSelectedProduct,
+				quantity: PanierClassFull[i].quantity,
 				alt: canap.altTxt,
 				img: canap.imageUrl,
 			};
-			basketArrayFull.push(article); //ajout de l'objet article au tableau 
+			panierArrayFull.push(article); //ajout de l'objet article au tableau 
 		})
 		.catch(function (err) {
 			console.log(err);
 		});
 }
 }
-return basketArrayFull;
+return panierArrayFull;
 };
 
-//////////// fonction d'affichage du DOM ////////////////////
-
-async function showBasket() {
-	const responseFetch = await fetchApi(); // appel de la fonction FETCH et attente de sa réponse//
-	const basketValue = JSON.parse(localStorage.getItem("kanapLs"));
-	if (basketValue !== null && basketValue.length !== 0) {
+// fonction d'affichage du DOM //
+async function vuDuPanier() {
+	const reponseFetch = await fetchApi(); // on appel de la fonction FETCH et on attent de sa réponse
+	const valeurPanier = JSON.parse(localStorage.getItem("kanapLs"));
+	if (valeurPanier !== null && valeurPanier.length !== 0) {
 		const zonePanier = document.querySelector("#cart__items");
-		responseFetch.forEach((product) => { // injection dynamique des produits dans le DOM
+		reponseFetch.forEach((product) => { // injection dynamique des produits dans le DOM
 			zonePanier.innerHTML += `<article class="cart__item" data-id="${product._id}" data-color="${product.color}">
                 <div class="cart__item__img">
-                    <img src= "${product.img}" alt="Photographie d'un canapé">
+                    <img src= "${product.img}" alt="Photoiraphie d'un canapé">
                 </div>
                 <div class="cart__item__content">
                     <div class="cart__item__content__description">
@@ -65,64 +66,64 @@ async function showBasket() {
 };
 //////////////création des fonctions de modif et suppression d'articles du panier/////////////////
 
-function getBasket() {  // fonction de récupération du LocalStorage//////
+function apercuPanier() {  // fonction de récupération du LocalStorage//////
     return JSON.parse(localStorage.getItem("kanapLs"));
 };
 
 //Fonction permettant de modifier le nombre d'éléments dans le panier
 
-async function modifyQuantity() {
+async function modifQuantite() {
 	await fetchApi(); //on attend que le fetch soit terminé
-	const quantityInCart = document.querySelectorAll(".itemQuantity");
-	for (let input of quantityInCart) {
+	const quantiteAuPanier = document.querySelectorAll(".itemQuantity");
+	for (let input of quantiteAuPanier) {
 		input.addEventListener("change", function () {
-			//écoute du changement de qty
-			let basketValue = getBasket();
+			//écoute du chaniement de qty
+			let valeurPanier = apercuPanier();
 			//On récupère l'ID de la donnée modifiée
 			let idModif = this.closest(".cart__item").dataset.id;
 			//On récupère la couleur de la donnée modifiée
 			let colorModif = this.closest(".cart__item").dataset.color;
 			//On filtre le Ls avec l'iD du canap modifié
-			let findId = basketValue.filter((e) => e.idSelectedProduct === idModif);
+			let findId = valeurPanier.filter((e) => e.idSelectedProduct === idModif);
 			//Puis on cherche le canap même id par sa couleur 
 			let findColor = findId.find((e) => e.colorSelectedProduct === colorModif);
 			if (this.value > 0) {
 				// si la couleur et l'id sont trouvés, on modifie la quantité en fonction
 				findColor.quantity = this.value;
-				//On Push le panier dans le local Storage
-				localStorage.setItem("kanapLs", JSON.stringify(basketValue));
+				//On Push le panier dans le local Storaie
+				localStorage.setItem("kanapLs", JSON.stringify(valeurPanier));
 				calculQteTotale();
 				calculPrixTotal();
 			} else {
 				calculQteTotale();
 				calculPrixTotal();
 			}
-			localStorage.setItem("kanapLs", JSON.stringify(basketValue));
+			localStorage.setItem("kanapLs", JSON.stringify(valeurPanier));
 		});
 	}
 };
 
 ////////////////Supprimer un kanap avec le bouton delete////////
 
-async function removeItem() {
+async function supprimeArticle() {
 	await fetchApi();
-	const kanapDelete = document.querySelectorAll(".deleteItem"); //crée un tableau avec les boutons suppr
-	kanapDelete.forEach((article) => {
+	const suppressionCanap = document.querySelectorAll(".deleteItem"); //crée un tableau avec les boutons suppr
+	suppressionCanap.forEach((article) => {
 		article.addEventListener("click", function (event) {
-			let basketValue = getBasket();
+			let valeurPanier = apercuPanier();
 			//On récupère l'ID de la donnée concernée
 			const idDelete = event.target.closest("article").getAttribute("data-id");
 			//On récupère la couleur de la donnée concernée
 			const colorDelete = event.target
 				.closest("article")
 				.getAttribute("data-color");
-			const searchDeleteKanap = basketValue.find(  // on cherche l'élément du Ls concerné 
+			const searchDeleteKanap = valeurPanier.find(  // on cherche l'élément du Ls concerné 
 				(element) => element.idSelectedProduct == idDelete && element.colorSelectedProduct == colorDelete
 			);
-			basketValue = basketValue.filter(  // et on filtre le Ls avec l'élément comme modèle
+			valeurPanier = valeurPanier.filter(  // et on filtre le Ls avec l'élément comme modèle
 				(item) => item != searchDeleteKanap
 			);
-			localStorage.setItem("kanapLs", JSON.stringify(basketValue)); // on met à jour le Ls
+			localStorage.setItem("kanapLs", JSON.stringify(valeurPanier)); // on met à jour le Ls
 			const getSection = document.querySelector("#cart__items");
 			getSection.removeChild(event.target.closest("article")); // on supprime l'élément du DOM
 			alert("article supprimé !");
@@ -130,27 +131,27 @@ async function removeItem() {
 			calculPrixTotal();  // on met à jour les qty et prix dynamiquement
 		});
 	});
-	if (getBasket() !== null && getBasket().length === 0) {
+	if (apercuPanier() !== null && apercuPanier().length === 0) {
 		localStorage.clear();       //////// si le Ls est vide, on le clear et on affiche le message 
 		return messagePanierVide();
 	}
 };
-removeItem();
+supprimeArticle();
 
 /// Initialisation des fonctions ///////////
 
 initialize();
 
 async function initialize() {
-showBasket();         ////// affichage du DOM ( avec rappel du fetchApi //////
-removeItem();		  ////// suppression dynamique des articles du panier et 
-modifyQuantity();	  ////// modification des quantités
+vuDuPanier();         ////// affichaie du DOM ( avec rappel du fetchApi //////
+supprimeArticle();		  ////// suppression dynamique des articles du panier et 
+modifQuantite();	  ////// modification des quantités
 
 calculQteTotale();	  ////// mise à jour dynamique des quantités et prix totaux
 calculPrixTotal();
 };
 
-//////////////// Message si panier vide ////////////////////
+//////////////// Messaie si panier vide ////////////////////
 
 function messagePanierVide() {
 	const cartTitle = document.querySelector(
@@ -167,13 +168,13 @@ function messagePanierVide() {
 ////////////////////////Fonction addition quantités et Prix pour Total////////////////
 
 function calculQteTotale() {
-	let basketValue = getBasket();
+	let valeurPanier = apercuPanier();
 	const zoneTotalQuantity = document.querySelector("#totalQuantity");
 	let quantityInBasket = []; // création d'un tableau vide pour accumuler les qtés
-	if (basketValue === null || basketValue.length === 0) {
+	if (valeurPanier === null || valeurPanier.length === 0) {
 		messagePanierVide();
 	} else {
-	for (let kanap of basketValue) {
+	for (let kanap of valeurPanier) {
 		quantityInBasket.push(parseInt(kanap.quantity)); //push des qtés
 		const reducer = (accumulator, currentValue) => accumulator + currentValue; // addition des objets du tableau par reduce
 		zoneTotalQuantity.textContent = quantityInBasket.reduce(reducer, 0); //valeur initiale à 0 pour eviter erreur quand panier vide
@@ -181,29 +182,29 @@ function calculQteTotale() {
 }};
 
 async function calculPrixTotal() {
-	const responseFetch = await fetchApi();
-	let basketValue = getBasket();
+	const reponseFetch = await fetchApi();
+	let valeurPanier = apercuPanier();
 	const zoneTotalPrice = document.querySelector("#totalPrice");
     finalTotalPrice = [];
-    for (let p = 0; p < responseFetch.length; p++) { //produit du prix unitaire et de la quantité
-	let sousTotal = parseInt(responseFetch[p].quantity) * parseInt(responseFetch[p].price);
+    for (let p = 0; p < reponseFetch.length; p++) { //produit du prix unitaire et de la quantité
+	let sousTotal = parseInt(reponseFetch[p].quantity) * parseInt(reponseFetch[p].price);
 	finalTotalPrice.push(sousTotal);
 
 	const reducer = (accumulator, currentValue) => accumulator + currentValue; // addition des prix du tableau par reduce
 	zoneTotalPrice.textContent = finalTotalPrice.reduce(reducer, 0); //valeur initiale à 0 pour eviter erreur quand panier vide
-	localStorage.setItem("kanapLs", JSON.stringify(basketValue));
+	localStorage.setItem("kanapLs", JSON.stringify(valeurPanier));
 }};
 
-modifyQuantity();
-removeItem();
+modifQuantite();
+supprimeArticle();
 
 
-//On Push le panier dans le local Storage
-localStorage.setItem("kanapLs", JSON.stringify(basketValue));
+//On Push le panier dans le local Storaie
+localStorage.setItem("kanapLs", JSON.stringify(valeurPanier));
 
 ///////////////// FORMULAIRE ///////////////////////////////////////////////
 
-// déclaration des différentes zones d'input et de messages d'erreur //
+// déclaration des différentes zones d'input et de messaies d'erreur //
 
 const zoneFirstNameErrorMsg = document.querySelector("#firstNameErrorMsg");
 const zoneLastNameErrorMsg = document.querySelector("#lastNameErrorMsg");
@@ -242,30 +243,30 @@ zoneOrderButton.addEventListener("click", function(e) {
 
 	// mise en place des conditions de validation des champs du formulaire //
 
-function orderValidation() {
-	let basketValue = getBasket();
+function commandeValide() {
+	let valeurPanier = apercuPanier();
 
-	// si une erreur est trouvée, un message est retourné et la valeur false également //
+	// si une erreur est trouvée, un messaie est retourné et la valeur false éialement //
 
 	if (regexFirstName.test(checkFirstName) == false || checkFirstName === null) {
 		inputFirstName.setAttribute('style', 'border:1px solid #FF0000; padding-left: 15px;');
-		zoneFirstNameErrorMsg.innerHTML = "Merci de renseigner un prénom valide";
+		zoneFirstNameErrorMsg.innerHTML = "Veuillez de renseigner un prénom valide";
 		return false;
 	} else if (regexLastName.test(checkLastName) == false ||checkLastName === null) {
 		inputLastName.setAttribute('style', 'border:1px solid #FF0000; padding-left: 15px;');
-		zoneLastNameErrorMsg.innerHTML = "Merci de renseigner un nom valide";
+		zoneLastNameErrorMsg.innerHTML = "Veuillez de renseigner un nom valide";
 		return false;
 	} else if (regexAddress.test(checkAddress) == false ||checkAddress === null) {
 		inputAddress.setAttribute('style', 'border:1px solid #FF0000; padding-left: 15px;');
-		zoneAddressErrorMsg.innerHTML ="Merci de renseigner une adresse valide (Numéro, voie, nom de la voie, code postale";
+		zoneAddressErrorMsg.innerHTML ="Veuillez renseigner une adresse valide (Numéro, voie, nom de la voie, code postale";
 		return false;
 	} else if (regexCity.test(checkCity) == false || checkCity === null) {
 		inputCity.setAttribute('style', 'border:1px solid #FF0000; padding-left: 15px;');
-		zoneCityErrorMsg.innerHTML = "Merci de renseigner un nom de ville valide";
+		zoneCityErrorMsg.innerHTML = "Veuillez de renseigner un nom de ville valide";
 		return false;
 	} else if (regexEmail.test(checkEmail) == false || checkEmail === null) {
 		inputEmail.setAttribute('style', 'border:1px solid #FF0000; padding-left: 15px;');
-		zoneEmailErrorMsg.innerHTML ="Merci de renseigner une adresse email valide";
+		zoneEmailErrorMsg.innerHTML ="Veuillez de renseigner une adresse email valide";
 		return false;
 	}
 	// si tous les champs du formulaire sont correctement remplis //
@@ -287,7 +288,7 @@ function orderValidation() {
 		// la requête POST ne prend en compte QUE l'ID des produits du panier //
 		// On ne push donc QUE les ID des canapés du panier dans le tableau créé //
 
-		for (let canapId of basketValue) {
+		for (let canapId of valeurPanier) {
 			products.push(canapId.idSelectedProduct);
 		}
 
@@ -307,12 +308,11 @@ function orderValidation() {
 		orderId.then(async function (response) {
 			// réponse de l'API //
 			const retour = await response.json();
-			//renvoi vers la page de confirmation avec l'ID de commande //
+			//renvoi vers la paie de confirmation avec l'ID de commande //
 			window.location.href = `confirmation.html?orderId=${retour.orderId}`;
 		}) 
 	}
 }
-
-orderValidation();
+commandeValide();
 }); 
 
