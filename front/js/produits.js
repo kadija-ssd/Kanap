@@ -109,13 +109,3 @@ fetch(`http://localhost:3000/api/products/${PageActuelleId}`) // Ici, on selecti
     .catch(function (err) {
 		console.log(err);
 	});
-    // ici on crée une variable qui détermine le nombre d'article dans le panier actuellement et qui affiche la valeur du panier en temps réel
-    let valeurActuelle = quantiteArticle.value;
-	if (valeurActuelle > 1 && valeurActuelle < 100) {
-		alert(`vous avez déjà ${valeurActuelle} article(s) dans votre panier, 
-				il est limité à 100 articles ! 
-				`);
-	} else if (valeurActuelle >= 100){
-		alert('Le panier à atteint sa limite maximale');
-		document.getElementById("addToCart").disabled = true;
-	}
